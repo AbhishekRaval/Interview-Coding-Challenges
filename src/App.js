@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {
-    Card, CardImg, CardText, CardBody,
+    Alert, Card, CardImg, CardText, CardBody,
     Input, Button, Modal, ModalHeader, ModalBody, ModalFooter
 } from 'reactstrap';
 import './App.css';
@@ -13,6 +13,7 @@ class App extends Component {
 
     constructor(props) {
         super(props);
+        var preloadedImg = [];
         var starwarimages = [
             {
                 imageid: 1,
@@ -46,16 +47,25 @@ class App extends Component {
             }
         ]
 
-        this.state = {
-            searchString: "",
-            file_name: "",
-            file_url: "",
-            images: starwarimages,
-            filteredimages: starwarimages,
-            caption: "",
-            counter: 6,
-            modal: false,
-        };
+        if (localStorage.getItem("photoState") != null){
+            preloadedImg = JSON.parse(localStorage.getItem("photoState"));
+        }
+        else
+        {
+            preloadedImg = starwarimages;
+        }
+
+            this.state = {
+                searchString: "",
+                file_name: "",
+                file_url: "",
+                images: preloadedImg,
+                filteredimages: preloadedImg,
+                caption: "",
+                counter: 6,
+                alertmsg:false,
+                modal: false,
+            };
         this.toggle = this.toggle.bind(this);
         this.updateURL = this.updateURL.bind(this);
         this.addimages = this.addimages.bind(this);
@@ -65,6 +75,7 @@ class App extends Component {
         this.deleteimage = this.deleteimage.bind(this);
 
     }
+
 
     toggle() {
         this.setState({
@@ -88,17 +99,28 @@ class App extends Component {
         data[tgt.attr('#searchString')] = tgt.val();
         let imageArray = this.state.images;
         let searchstring = tgt.val();
-        if(emptyRegex.test(searchstring) || searchstring == "")
+        var filteredImageArray= [];
+        var alert = "";
+        if(emptyRegex.test(searchstring) || searchstring === "")
         {
-            var filteredImageArray = imageArray;
+             filteredImageArray = imageArray;
+             alert=false;
+
         }
         else{
-            var filteredImageArray = imageArray.filter(item => item.name.indexOf(tgt.val())>-1);
+            filteredImageArray = imageArray.filter(item => item.name.indexOf(tgt.val())>-1);
+            if (filteredImageArray.length > 0){
+                 alert = false;
+            }
+            else{
+                 alert = true;
+            }
         }
 
         this.setState({
             searchString: tgt.val(),
-            filteredimages: filteredImageArray
+            filteredimages: filteredImageArray,
+            alertmsg:alert,
         });
     }
 
@@ -130,26 +152,33 @@ class App extends Component {
         )
         this.setState({
             images: imageArray,
+            filteredimages: imageArray,
             counter: this.state.counter+1,
             caption: "",
             file_url: "",
             file_name: "",
-            modal: !this.state.modal
+            modal: !this.state.modal,
+            searchString:""
         });
+        var userjson = JSON.stringify(imageArray);
+        localStorage.setItem("photoState",userjson);
     }
 
     deleteimage(imgid){
         let imageArray = this.state.images;
         let filteredImageArray = imageArray.filter(item => item.imageid !== imgid);
         this.setState({
-            images: filteredImageArray
+            images: filteredImageArray,
+            filteredimages: filteredImageArray,
+            searchString:""
         });
-
+        var userjson = JSON.stringify(filteredImageArray);
+        localStorage.setItem("photoState",userjson);
     }
 
     render() {
         return <div className="container">
-            <div className="row my-3">
+            <div className="row">
                 <div className="col-10  align-self-center">
                     <h3 className="text-center">Photo Library</h3>
                 </div>
@@ -160,23 +189,27 @@ class App extends Component {
                     </i></button>
                 </div>
             </div>
-            <div className="row my-2">
-                <input class="form-control mr-sm-2" type="search" id="searchString"
+
+            <div className="row mt-1 mb-4">
+                <input className="form-control mr-sm-2" type="search" id="searchString" value={this.state.searchString}
                        onChange={this.updateSearch} placeholder="Search" aria-label="Search"/>
+                <Alert color="info" className="my-2" isOpen={this.state.alertmsg}>
+                    Sorry, No Images found for the search term "{this.state.searchString}"
+                </Alert>
             </div>
 
 
             <div className="row">
                 <div className="card-columns">
                     {this.state.filteredimages.map(image => (
-                        <Card>
+                        <Card key={image.imageid}>
                             <CardImg top width="100%" src={image.url} className="imagesCard" alt="Card image cap"/>
                             <CardBody>
                                 <span>
                                     <CardText className="float-left">{image.name}</CardText>
                                     <button className="btn btn-link float-right"
                                             onClick={() => this.deleteimage(image.imageid)}>
-                                        <i class="material-icons md-24" >
+                                        <i className="material-icons md-24" >
                                             delete_outline</i></button>
                                 </span>
                             </CardBody>
