@@ -73,7 +73,7 @@ class App extends Component {
         this.updateCaption = this.updateCaption.bind(this);
         this.clearModal = this.clearModal.bind(this);
         this.deleteimage = this.deleteimage.bind(this);
-
+        this.handleImageChange = this.handleImageChange.bind(this);
     }
 
 
@@ -133,7 +133,9 @@ class App extends Component {
         });
     }
 
-    clearModal(){
+    clearModal(ev){
+        let data = {};
+        data[$(ev.target).attr('#imageFile')] = "";
         this.setState({
             caption: "",
             file_url: "",
@@ -176,7 +178,25 @@ class App extends Component {
         localStorage.setItem("photoState",userjson);
     }
 
+    //Credits : https://gist.github.com/hartzis/0b77920380736f98e4f9
+    handleImageChange(e) {
+        e.preventDefault();
+        let reader = new FileReader();
+        let file = e.target.files[0];
+        reader.onloadend = () => {
+            this.setState({
+                file_name: file,
+                file_url: reader.result
+            });
+        }
+        reader.readAsDataURL(file)
+    }
+
     render() {
+        let $imagePreview = null;
+        if (this.state.file_url) {
+            $imagePreview = (<img className="imagesCard " src={this.state.file_url} />);
+        }
         return <div className="container">
             <div className="row">
                 <div className="col-10  align-self-center">
@@ -229,7 +249,7 @@ class App extends Component {
                     <div className="row">
                         <div className="col align-self-center">
                             <div className="row justify-content-center mx-2">
-                                <Input type="file" name="file" id="exampleFile"/>
+                                <Input type="file" name="file" id="imageFile" onChange={this.handleImageChange}/>
                             </div>
                         </div>
                         <div className="mycontent-left"></div>
@@ -238,6 +258,9 @@ class App extends Component {
                                    onChange={this.updateURL} value={this.state.file_url} className="form-control"/>
                         </div>
                     </div>
+                    <div className="row justify-content-center mx-2">
+                        {$imagePreview}
+                    </div>
                     <div className="row my-3 mx-3">
                         <input type="text" placeholder="Enter Image Caption" id="caption"
                                onChange={this.updateCaption} value={this.state.caption} className="form-control border-bottom"/>
@@ -245,7 +268,8 @@ class App extends Component {
                 </ModalBody>
                 <ModalFooter className="justify-content-center">
                     <Button color="primary" onClick={this.addimages}>Upload Image</Button>
-                    <Button color="Secondary" className="ml-3" onClick={this.clearModal}>Clear Contents</Button>{' '}
+                    <Button color="info" className="mx-3" onClick={this.clearModal}>Clear Contents</Button>
+                    <Button color="danger" onClick={this.toggle}> Close</Button>
                 </ModalFooter>
             </Modal>
         </div>;
