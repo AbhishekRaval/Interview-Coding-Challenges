@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {
-    Alert, Card, CardImg, CardText, CardBody,
+    CustomInput, Alert, Card, CardImg, CardText, CardBody,
     Input, Button, Modal, ModalHeader, ModalBody, ModalFooter
 } from 'reactstrap';
 import './App.css';
@@ -55,17 +55,17 @@ class App extends Component {
             preloadedImg = starwarimages;
         }
 
-            this.state = {
-                searchString: "",
-                file_name: "",
-                file_url: "",
-                images: preloadedImg,
-                filteredimages: preloadedImg,
-                caption: "",
-                counter: 6,
-                alertmsg:false,
-                modal: false,
-            };
+        this.state = {
+            searchString: "",
+            file_name: "",
+            file_url: "",
+            images: preloadedImg,
+            filteredimages: preloadedImg,
+            caption: "",
+            counter: 6,
+            alertmsg:false,
+            modal: false,
+        };
         this.toggle = this.toggle.bind(this);
         this.updateURL = this.updateURL.bind(this);
         this.addimages = this.addimages.bind(this);
@@ -103,17 +103,17 @@ class App extends Component {
         var alert = "";
         if(emptyRegex.test(searchstring) || searchstring === "")
         {
-             filteredImageArray = imageArray;
-             alert=false;
+            filteredImageArray = imageArray;
+            alert=false;
 
         }
         else{
             filteredImageArray = imageArray.filter(item => item.name.indexOf(tgt.val())>-1);
             if (filteredImageArray.length > 0){
-                 alert = false;
+                alert = false;
             }
             else{
-                 alert = true;
+                alert = true;
             }
         }
 
@@ -183,6 +183,7 @@ class App extends Component {
         e.preventDefault();
         let reader = new FileReader();
         let file = e.target.files[0];
+        document.getElementById("uploadFile").value = e.target.value;
         reader.onloadend = () => {
             this.setState({
                 file_name: file,
@@ -249,7 +250,20 @@ class App extends Component {
                     <div className="row">
                         <div className="col align-self-center">
                             <div className="row justify-content-center mx-2">
-                                <Input type="file" name="file" id="imageFile" onChange={this.handleImageChange}/>
+                                {
+                                    //source: https://jsfiddle.net/agaust/n4avzhos/
+                                }
+                                <div className="panel-body">
+                                    <div className="input-group">
+                                        <input id="uploadFile" className="form-control" placeholder="Choose File" disabled="disabled" />
+                                        <div className="input-group-btn">
+                                            <div className="fileUpload btn btn-success">
+                                                <span><i class="material-icons md-24"> open_in_browser </i></span>
+                                                <input type="file" name="file" id="imageFile" onChange={this.handleImageChange} className="upload" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div className="mycontent-left"></div>
@@ -267,9 +281,13 @@ class App extends Component {
                     </div>
                 </ModalBody>
                 <ModalFooter className="justify-content-center">
-                    <Button color="primary" onClick={this.addimages}>Upload Image</Button>
-                    <Button color="info" className="mx-3" onClick={this.clearModal}>Clear Contents</Button>
-                    <Button color="danger" onClick={this.toggle}> Close</Button>
+                    <Button color="dark" onClick={this.addimages}><i class="material-icons">
+                        cloud_upload
+                    </i></Button>
+                    <Button color="dark" className="mx-3" onClick={this.clearModal}>Clear Contents</Button>
+                    <Button color="dark" onClick={this.toggle}><i class="material-icons">
+                        clear
+                    </i></Button>
                 </ModalFooter>
             </Modal>
         </div>;
